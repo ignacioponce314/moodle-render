@@ -15,13 +15,18 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd intl mysqli zip soap opcache \
     && rm -rf /var/lib/apt/lists/*
 
-# Activar mod_rewrite de Apache
+# Activar mod_rewrite
 RUN a2enmod rewrite
 
-# Descargar Moodle (estable)
+# Descargar Moodle
 RUN git clone -b MOODLE_401_STABLE https://github.com/moodle/moodle.git /var/www/html
 
-# Establecer permisos
+# Crear moodledata con permisos correctos
+RUN mkdir -p /var/www/moodledata \
+    && chown -R www-data:www-data /var/www/moodledata \
+    && chmod -R 0777 /var/www/moodledata
+
+# Permisos para el código
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
