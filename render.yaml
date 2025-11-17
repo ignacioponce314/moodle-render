@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: moodle
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: DB_HOST
+        value: CHANGEME
+      - key: DB_USER
+        value: moodle
+      - key: DB_PASS
+        value: password123
+      - key: DB_NAME
+        value: moodle
