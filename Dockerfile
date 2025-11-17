@@ -1,9 +1,7 @@
 FROM php:8.1-apache
 
-# Habilitar mods necesarios
 RUN a2enmod rewrite
 
-# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -17,16 +15,20 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd zip soap intl pgsql pdo_pgsql
 
-# Descargar Moodle 4.0.12
 WORKDIR /var/www/html
 RUN rm -rf /var/www/html/*
 RUN git clone -b MOODLE_400_STABLE https://github.com/moodle/moodle.git .
 RUN chown -R www-data:www-data /var/www/html
 
-# Crear moodledata fuera de /var/www/html
 RUN mkdir -p /var/www/moodledata \
     && chown -R www-data:www-data /var/www/moodledata \
-    && chmod -R 777
+    && chmod -R 777 /var/www/moodledata
+
+RUN echo "display_errors=On" >> /usr/local/etc/php/conf.d/moodle.ini
+
+EXPOSE 80
+CMD ["apache2-foreground"]
+
 
 
 
