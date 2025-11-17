@@ -1,32 +1,35 @@
-FROM php:8.1-apache
+FROM php:8.2-apache
 
-# Instalar dependencias del sistema
+# Instalar dependencias de Moodle + PostgreSQL
 RUN apt-get update && apt-get install -y \
     libpng-dev \
-    libjpeg62-turbo-dev \
+    libjpeg-dev \
     libfreetype6-dev \
-    libicu-dev \
     libxml2-dev \
     libzip-dev \
     unzip \
     git \
-    zlib1g-dev \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd intl mysqli zip soap opcache \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install gd mysqli opcache zip soap intl pgsql pdo_pgsql
 
-# Activar mod_rewrite
+# Habilitar mod_rewrite para Apache (Moodle lo requiere)
 RUN a2enmod rewrite
 
-# Descargar Moodle
-RUN git clone -b MOODLE_401_STABLE https://github.com/moodle/moodle.git /var/www/html
+# Configuración de Apache para permitir .htaccess
+RUN sed -i "s/AllowOverride None/AllowOverride All/g" /etc/apache2/apache2.conf
 
-# Crear moodledata con permisos correctos
+# Copiar contenido del repositorio (tu Moodle) al servidor web
+COPY . /var/www/html/
+
+# Crear carpeta moodledata si no existe
 RUN mkdir -p /var/www/moodledata \
     && chown -R www-data:www-data /var/www/moodledata \
     && chmod -R 0777 /var/www/moodledata
 
-# Permisos para el código
+# Ajustar permisos del código Moodle
 RUN chown -R www-data:www-data /var/www/html
 
+# Exponer puerto 80
 EXPOSE 80
+
